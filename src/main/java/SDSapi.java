@@ -25,7 +25,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SDSapi implements CustomFieldResource, DocumentResource, FieldBlockResource, TemplateResource
+public class SDSapi
+        implements CustomFieldResource, DocumentResource, FieldBlockResource, TemplateResource
 {
     private String token;
     private String XSRFTOKEN;
@@ -186,14 +187,14 @@ public class SDSapi implements CustomFieldResource, DocumentResource, FieldBlock
         return response;
     }
 
-    String getSDSFormatedDate(LocalDateTime formattable)
+    String getSDSFormattedDate( LocalDateTime formattable)
     {
         return DateTimeFormatter
                 .ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                 .format(formattable);
     }
 
-    String getSDSFormatedDate(Date formattable)
+    String getSDSFormattedDate( Date formattable)
     {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(formattable);
     }
@@ -281,7 +282,7 @@ public class SDSapi implements CustomFieldResource, DocumentResource, FieldBlock
                 "/api/documents", REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("assignedTemplates", assignedTemplates)
                                 .put("created",
-                                        getSDSFormatedDate(LocalDateTime.now())
+                                        getSDSFormattedDate(LocalDateTime.now())
                                 ).toString());
 
 
@@ -315,7 +316,7 @@ public class SDSapi implements CustomFieldResource, DocumentResource, FieldBlock
         HttpResponse response = doAPIJSONRequest(
                 "/api/documents", REQUESTTYPE.REQUESTTYPE_PUT,
                 new JSONObject().put("assignedTemplates", document.getAssignedTemplates())
-                                .put("created", getSDSFormatedDate(document.getCreated()))
+                                .put("created", getSDSFormattedDate(document.getCreated()))
                                 .put("id", document.getId()).toString());
 
 
