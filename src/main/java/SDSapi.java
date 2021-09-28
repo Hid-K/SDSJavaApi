@@ -1,8 +1,8 @@
-import domain.entity.CustomField;
 import dto.CustomFieldDTO;
 import dto.DocumentDTO;
 import dto.template.FieldBlockDTO;
 import dto.template.TemplateDTO;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -12,12 +12,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.Date;
+import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 
 public class SDSapi
@@ -135,7 +136,7 @@ public class SDSapi
 
     private HttpResponse doAPIJSONRequest(String endpoint, int requestType, String requestBody)
     {
-        System.out.println("Request:\n" + endpoint);
+        System.out.println("=================\nRequest:\n" + endpoint);
         System.out.println(requestBody+"\n");
         HttpClient client = HttpClient.newHttpClient();
 
@@ -160,10 +161,11 @@ public class SDSapi
         {
             request = requestBuilder.PUT(HttpRequest.BodyPublishers.ofByteArray(requestBody.getBytes()))
                     .build();
-        } else
+        } else if(requestType == REQUESTTYPE.REQUESTTYPE_DELETE)
         {
-            return null;
-        }
+            request = requestBuilder.DELETE()
+                    .build();
+        } else return null;
 
         HttpResponse<String> response = null;
 
@@ -175,7 +177,7 @@ public class SDSapi
             e.printStackTrace();
         }
 
-        System.out.println("Response:\n" + response.body());
+        System.out.println("Response:\n" + response.body() + "\n=================");
 
         return response;
     };
@@ -185,6 +187,16 @@ public class SDSapi
         return DateTimeFormatter
                 .ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                 .format(formattable);
+    };
+
+    String getSDSFormatedDate(Date formattable)
+    {
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(formattable);
+    };
+
+    void handleNonSuccessfullResponse(HttpResponse response)
+    {
+        System.out.println(response);
     };
 
     // Custom field methods
@@ -206,7 +218,11 @@ public class SDSapi
                                           new JSONObject(String.valueOf(response.body())).getString("name"),
                                           new JSONObject(String.valueOf(response.body())).getString("description"),
                                           new JSONObject(String.valueOf(response.body())).getString("customFieldType"));
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -223,7 +239,11 @@ public class SDSapi
                     response.statusCode() == 201)
             {
                 return value;
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -240,7 +260,11 @@ public class SDSapi
                     response.statusCode() == 201)
             {
                 return (String) response.body();
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
     // Custom field methods END
@@ -271,7 +295,43 @@ public class SDSapi
                     e.printStackTrace();
                     return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
                 }
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    };
+
+    DocumentDTO updateDocument(DocumentDTO document)
+    {
+        HttpResponse response = doAPIJSONRequest(
+                "/api/documents", REQUESTTYPE.REQUESTTYPE_PUT,
+                new JSONObject().put("assignedTemplates", document.getAssignedTemplates())
+                                .put("created", getSDSFormatedDate(document.getCreated()))
+                                .put("id", document.getId()).toString());
+
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                try
+                {
+                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
+                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+                                    .parse((new JSONObject(String.valueOf(response.body())).getString("created"))));
+                } catch (ParseException e)
+                {
+                    e.printStackTrace();
+                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
+                }
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -296,7 +356,62 @@ public class SDSapi
                     e.printStackTrace();
                     return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
                 }
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    };
+
+    void deleteDocument(Long id)
+    {
+        HttpResponse response = doAPIJSONRequest(
+                "/api/documents/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, "");
+
+        if(response.statusCode() != 200 &&
+           response.statusCode() != 201 &&
+           response.statusCode() != 204) handleNonSuccessfullResponse(response);
+    };
+
+    DocumentDTO[] getAllDocuments(int pageNumber, int pageSize)
+    {
+        HttpResponse response = doAPIJSONRequest("/api/documents?page=" + pageNumber +
+                "size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, "");
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                List<DocumentDTO> result = new LinkedList<>();
+                for (Object o : new JSONArray(String.valueOf(response.body())))
+                {
+                    JSONObject docJSON = new JSONObject(o.toString());
+                    DocumentDTO doc = new DocumentDTO();
+                    doc.setId(docJSON.getLong("id"));
+                    try
+                    {
+                        doc.setCreated(
+                                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+                                        .parse(docJSON.getString("created"))
+                                        );
+                        doc.setAssignedTemplates((List<Long>)(Object)docJSON.getJSONArray("assignedTemplates").toList());
+                        result.add(doc);
+                    } catch (ParseException e)
+                    {
+                        e.printStackTrace();
+                        doc.setCreated(null);
+                        result.add( doc );
+                    }
+                }
+
+                return result.toArray(new DocumentDTO[0]);
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
     //Document methods END
@@ -318,7 +433,11 @@ public class SDSapi
                 return new TemplateDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
                         new JSONObject(String.valueOf(response.body())).getString("name"),
                         new JSONObject(String.valueOf(response.body())).getString("description"));
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -336,7 +455,11 @@ public class SDSapi
                     response.statusCode() == 201)
             {
                 return (DocumentDTO) response.body();
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -357,7 +480,11 @@ public class SDSapi
                 return new TemplateDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
                         new JSONObject(String.valueOf(response.body())).getString("name"),
                         new JSONObject(String.valueOf(response.body())).getString("description"));
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
     //Template methods END
@@ -380,7 +507,11 @@ public class SDSapi
                 return new FieldBlockDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
                         new JSONObject(String.valueOf(response.body())).getString("name"),
                         new JSONObject(String.valueOf(response.body())).getString("description"));
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 
@@ -401,7 +532,11 @@ public class SDSapi
                 return new FieldBlockDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
                         new JSONObject(String.valueOf(response.body())).getString("name"),
                         new JSONObject(String.valueOf(response.body())).getString("description"));
-            } else return null;
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
         } else return null;
     };
 

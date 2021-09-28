@@ -51,12 +51,12 @@ ToDo:
 
 Realized methods:
 
-* [ ] Document:
+* [x] Document:
   * [x] createDocument
-  * [ ] updateDocument
+  * [x] updateDocument
   * [x] getDocument
-  * [ ] deleteDocument
-  * [ ] getAllDocuments
+  * [x] deleteDocument
+  * [x] getAllDocuments
 * [ ] Custom field:
   * [x] createCustomField
   * [ ] updateCustomField
