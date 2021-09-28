@@ -4,6 +4,10 @@ import dto.template.FieldBlockDTO;
 import dto.template.TemplateDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import resource.CustomFieldResource;
+import resource.DocumentResource;
+import resource.FieldBlockResource;
+import resource.TemplateResource;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SDSapi
+public class SDSapi implements CustomFieldResource, DocumentResource, FieldBlockResource, TemplateResource
 {
     private String token;
     private String XSRFTOKEN;
@@ -180,27 +184,27 @@ public class SDSapi
         System.out.println("Response:\n" + response.body() + "\n=================");
 
         return response;
-    };
+    }
 
     String getSDSFormatedDate(LocalDateTime formattable)
     {
         return DateTimeFormatter
                 .ofPattern("yyyy-MM-dd'T'HH:mm:ss")
                 .format(formattable);
-    };
+    }
 
     String getSDSFormatedDate(Date formattable)
     {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(formattable);
-    };
+    }
 
     void handleNonSuccessfullResponse(HttpResponse response)
     {
         System.out.println(response);
-    };
+    }
 
-    // Custom field methods
-    CustomFieldDTO createCustomField(String description, String name, String type)
+    @Override
+    public CustomFieldDTO createCustomField( String description, String name, String type )
     {
         HttpResponse response = doAPIJSONRequest("/api/customFields", REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
@@ -224,9 +228,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    String setCustomFieldValue(Long customFieldId, Long documentId, String value)
+    @Override
+    public String setCustomFieldValue( Long customFieldId, Long documentId, String value )
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/customFields/value?customFieldId=" + customFieldId +
@@ -245,9 +250,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    String getCustomFieldValue(Long customFieldId, Long documentId)
+    @Override
+    public String getCustomFieldValue( Long customFieldId, Long documentId )
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/customFields/value?customFieldId=" + customFieldId +
@@ -266,11 +272,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
-    // Custom field methods END
+    }
 
-    //Document methods
-    DocumentDTO createDocument(Long[] assignedTemplates)
+    @Override
+    public DocumentDTO createDocument(Long[] assignedTemplates)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/documents", REQUESTTYPE.REQUESTTYPE_POST,
@@ -301,9 +306,11 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    DocumentDTO updateDocument(DocumentDTO document)
+
+    @Override
+    public DocumentDTO updateDocument(DocumentDTO document)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/documents", REQUESTTYPE.REQUESTTYPE_PUT,
@@ -333,9 +340,11 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    DocumentDTO getDocument(Long id)
+
+    @Override
+    public DocumentDTO getDocument(Long id)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/documents/"+id, REQUESTTYPE.REQUESTTYPE_GET, "");
@@ -362,9 +371,11 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    void deleteDocument(Long id)
+
+    @Override
+    public void deleteDocument(Long id)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/documents/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, "");
@@ -372,9 +383,11 @@ public class SDSapi
         if(response.statusCode() != 200 &&
            response.statusCode() != 201 &&
            response.statusCode() != 204) handleNonSuccessfullResponse(response);
-    };
+    }
 
-    DocumentDTO[] getAllDocuments(int pageNumber, int pageSize)
+
+    @Override
+    public DocumentDTO[] getAllDocuments(int pageNumber, int pageSize)
     {
         HttpResponse response = doAPIJSONRequest("/api/documents?page=" + pageNumber +
                 "size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, "");
@@ -413,11 +426,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
-    //Document methods END
+    }
 
-    //Template methods
-    TemplateDTO createTemplate(String description, String name)
+    @Override
+    public TemplateDTO createTemplate(String description, String name)
     {
         HttpResponse response = doAPIJSONRequest("/api/templates", REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
@@ -439,9 +451,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    DocumentDTO assignTemplateToDocument(Long documentId, Long templateId)
+    @Override
+    public DocumentDTO assignTemplateToDocument(Long documentId, Long templateId)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/assignTemplateToDocument?documentId=" + documentId +
@@ -461,9 +474,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    TemplateDTO addItemToTemplateLayout(Long fieldBlockId, int position, Long templateId)
+    @Override
+    public TemplateDTO addItemToTemplateLayout(Long fieldBlockId, int position, Long templateId)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/templateLayout?fieldBlockId=" +fieldBlockId+
@@ -486,12 +500,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
-    //Template methods END
+    }
 
-    //Field block methods
-
-    FieldBlockDTO createFieldBlock(String description, String name)
+    @Override
+    public FieldBlockDTO createFieldBlock(String description, String name)
     {
         HttpResponse response = doAPIJSONRequest("/api/fieldBlocks", REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
@@ -513,9 +525,10 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
+    }
 
-    FieldBlockDTO addItemToFieldBlockLayout(Long customFieldId, Long fieldBlockId, int position)
+    @Override
+    public FieldBlockDTO addItemToFieldBlockLayout(Long customFieldId, Long fieldBlockId, int position)
     {
         HttpResponse response = doAPIJSONRequest(
                 "/api/fieldBlockLayout?customFieldId="+customFieldId +
@@ -538,8 +551,6 @@ public class SDSapi
                 return null;
             }
         } else return null;
-    };
-
-    //Field block methods END
+    }
 
 }
