@@ -1,3 +1,6 @@
+/**
+ * CustomField type-key class <a href="https://gitlab.com/ooo-laptev/sds/-/wikis/User-documentation">(check documentation)</a>
+ */
 public class CustomFieldTypeKey
 {
     public static final String string = "com.laptevaleksei.smartdocumentstorage.customfield.StringCustomField";

@@ -3,6 +3,8 @@ package resource;
 import dto.DocumentDTO;
 import dto.template.TemplateDTO;
 
+import javax.security.auth.login.LoginException;
+
 
 /**
  * Represents a REST API related with Templates
@@ -19,7 +21,7 @@ public interface TemplateResource
      * @param name Display name for new Template.
      * @return Returns a DTO of Created Template
      */
-    TemplateDTO createTemplate( String description, String name);
+    TemplateDTO createTemplate( String description, String name) throws LoginException;
 
     /**
      * Assigns specified Template to existing Document.
@@ -27,7 +29,7 @@ public interface TemplateResource
      * @param templateId Template ID.
      * @return Returns a DTO of assigned Document.
      */
-    DocumentDTO assignTemplateToDocument( Long documentId, Long templateId);
+    DocumentDTO assignTemplateToDocument( Long documentId, Long templateId) throws LoginException;
 
     /**
      * Adds FieldBlock to the Template.
@@ -36,5 +38,5 @@ public interface TemplateResource
      * @param position Position of new item in Template.
      * @return Returns a DTO of assigned Template.
      */
-    TemplateDTO addItemToTemplateLayout(Long fieldBlockId, int position, Long templateId);
+    TemplateDTO addItemToTemplateLayout(Long fieldBlockId, int position, Long templateId) throws LoginException;
 }

@@ -2,6 +2,8 @@ package resource;
 
 import dto.template.FieldBlockDTO;
 
+import javax.security.auth.login.LoginException;
+
 
 /**
  * Represents a REST API related with FieldBlocks
@@ -17,7 +19,7 @@ public interface FieldBlockResource
      * @param name Display name of new FieldBlock.
      * @return Returns a DTO of Created FieldBlock
      */
-    FieldBlockDTO createFieldBlock( String description, String name);
+    FieldBlockDTO createFieldBlock( String description, String name) throws LoginException;
 
     /**
      * Adds CustomField to the FieldBlock.
@@ -26,5 +28,5 @@ public interface FieldBlockResource
      * @param position Position of new item in the FieldBlock.
      * @return Returns a DTO of FieldBlock.
      */
-    FieldBlockDTO addItemToFieldBlockLayout(Long customFieldId, Long fieldBlockId, int position);
+    FieldBlockDTO addItemToFieldBlockLayout(Long customFieldId, Long fieldBlockId, int position) throws LoginException;
 }

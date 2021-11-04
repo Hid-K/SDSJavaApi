@@ -3,14 +3,15 @@ import dto.DocumentDTO;
 import dto.template.FieldBlockDTO;
 import dto.template.TemplateDTO;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.Arrays;
 
 public class main
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, LoginException
     {
-        SDSapi api = new SDSapi("admin", "admin", "http://192.168.88.239:8080");
+        SDSapi api = new SDSapi("admin", "admin", "http://localhost:8080");
 
         CustomFieldDTO createdCF = api.createCustomField("CF description", "CF name",
                 CustomFieldTypeKey.string);

@@ -46,7 +46,7 @@ public class main
 
 ToDo:
 
-* [ ] Add SDS DTO's as imports from SDS original repo
+* [x] Add SDS DTO's as imports from SDS original repo
 * [x] Add `created` field value generation in `createDocument()`
 
 Realized methods:
