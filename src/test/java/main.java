@@ -1,4 +1,5 @@
 import dto.CustomFieldDTO;
+import dto.CustomFieldTypeKey;
 import dto.DocumentDTO;
 import dto.template.FieldBlockDTO;
 import dto.template.TemplateDTO;
@@ -43,5 +44,17 @@ public class main
         api.deleteDocument(createdDocument.getId());
 
         System.out.println(api.getDocument(createdDocument.getId()));
+
+        System.out.println(api.getCustomField(createdCF.getId()));
+        System.out.println(api.updateCustomField("description", "name", CustomFieldTypeKey.date, createdCF.getId()));
+
+        System.out.println(api.getCustomField(createdCF.getId()));
+
+        System.out.println(Arrays.deepToString(api.getAllCustomFields(1,8)));
+        System.out.println(Arrays.toString(api.getAvailableCustomFieldTypes()));
+
+        api.deleteCustomField(createdCF.getId());
+
+        System.out.println(api.getCustomField(createdCF.getId()));
     }
 }

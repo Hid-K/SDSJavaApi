@@ -36,6 +36,7 @@ public class JWTAuthInterceptorImpl implements Interceptor
             throw new LoginException();
         }
         System.out.println("=================\nRequest:\n" + endpoint);
+        System.out.println(REQUESTTYPE.toMethodName(requestType));
         System.out.println(requestBody+"\n");
         HttpClient client = HttpClient.newHttpClient();
 

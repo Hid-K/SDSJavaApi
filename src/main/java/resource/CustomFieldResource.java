@@ -1,6 +1,7 @@
 package resource;
 
 import dto.CustomFieldDTO;
+import dto.CustomFieldTypeKey;
 
 import javax.security.auth.login.LoginException;
 
@@ -29,7 +30,37 @@ public interface CustomFieldResource
      * @param type CustomField type-key <a href="https://gitlab.com/ooo-laptev/sds/-/wikis/User-documentation">(check documentation)</a>
      * @return Returns a DTO of created CustomField
      */
-//    CustomFieldDTO updateCustomField(String description, String name, String type);
+    CustomFieldDTO updateCustomField(String description, String name, String type, Long id) throws LoginException;
+
+//    CustomFieldTypeKey[] getAvailableCustomFieldTypes();
+
+    /**
+     * Returns custom field from the system
+     * @param id custom field id
+     * @return Returns a DTO of CustomField
+     */
+    CustomFieldDTO getCustomField(Long id) throws LoginException;
+
+    /**
+     * Deletes custom field from the system
+     * @param id is of deletable custom field
+     */
+    void deleteCustomField(Long id) throws LoginException;
+
+    /**
+     * Getting list of all custom fields from the system.
+     * @param pageNumber Page number of the requested page
+     * @param pageSize Size of a page
+     * @return list of all custom fields from the system.
+     */
+    CustomFieldDTO[] getAllCustomFields(int pageNumber, int pageSize) throws LoginException;
+
+    /**
+     * Getting all available types of custom fields from the system
+     * @return Array of all available custom field types.
+     * @throws LoginException
+     */
+    String[] getAvailableCustomFieldTypes() throws LoginException;
 
     /**
      * Sets a value for CustomField-Document relationship.

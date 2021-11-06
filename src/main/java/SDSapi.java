@@ -11,24 +11,18 @@ import resource.CustomFieldResource;
 import resource.DocumentResource;
 import resource.FieldBlockResource;
 import resource.TemplateResource;
-import resource.authentication.AuthenticationResource;
-import resource.authentication.JavaSessionAuthenticationResourceImpl;
 import resource.authentication.LoginVM;
 
 import javax.security.auth.login.LoginException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -95,6 +89,113 @@ public class SDSapi
                                           new JSONObject(String.valueOf(response.body())).getString("name"),
                                           new JSONObject(String.valueOf(response.body())).getString("description"),
                                           new JSONObject(String.valueOf(response.body())).getString("type"));
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    }
+
+    @Override
+    public CustomFieldDTO updateCustomField(String description, String name, String type, Long id) throws LoginException
+    {
+        HttpResponse response = interceptor.doRequest("/api/customFields", REQUESTTYPE.REQUESTTYPE_PUT,
+                new JSONObject().put("description", description)
+                        .put("id", id)
+                        .put("name", name)
+                        .put("type", type).toString());
+
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                return new CustomFieldDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
+                        new JSONObject(String.valueOf(response.body())).getString("name"),
+                        new JSONObject(String.valueOf(response.body())).getString("description"),
+                        new JSONObject(String.valueOf(response.body())).getString("type"));
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    }
+
+    @Override
+    public CustomFieldDTO getCustomField(Long id) throws LoginException
+    {
+        HttpResponse response = interceptor.doRequest("/api/customFields/"+id, REQUESTTYPE.REQUESTTYPE_GET, null);
+
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                return new CustomFieldDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
+                        new JSONObject(String.valueOf(response.body())).getString("name"),
+                        new JSONObject(String.valueOf(response.body())).getString("description"),
+                        new JSONObject(String.valueOf(response.body())).getString("type"));
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    }
+
+    @Override
+    public void deleteCustomField(Long id) throws LoginException
+    {
+        interceptor.doRequest("/api/customFields/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, null);
+    }
+
+    @Override
+    public CustomFieldDTO[] getAllCustomFields(int pageNumber, int pageSize) throws LoginException
+    {
+        HttpResponse response = interceptor.doRequest("/api/customFields?page="+pageNumber+"&size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, null);
+
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                List<CustomFieldDTO> result = new LinkedList<>();
+                for (Object o : new JSONArray(String.valueOf(response.body())))
+                {
+                    JSONObject cfJSON = new JSONObject(o.toString());
+                    CustomFieldDTO cf = new CustomFieldDTO();
+                    cf.setId(cfJSON.getLong("id"));
+                    cf.setDescription(cfJSON.getString("description"));
+                    cf.setName(cfJSON.getString("name"));
+                    cf.setType(cfJSON.getString("type"));
+                    result.add(cf);
+                }
+
+                return result.toArray(new CustomFieldDTO[0]);
+            } else
+            {
+                handleNonSuccessfullResponse(response);
+                return null;
+            }
+        } else return null;
+    }
+
+    @Override
+    public String[] getAvailableCustomFieldTypes() throws LoginException
+    {
+        HttpResponse response = interceptor.doRequest("/api/customFields/availableTypes", REQUESTTYPE.REQUESTTYPE_GET, null);
+
+        if(response != null)
+        {
+            if (response.statusCode() == 200 ||
+                    response.statusCode() == 201)
+            {
+                return new JSONArray(response.body().toString()).toList().toArray(new String[0]);
             } else
             {
                 handleNonSuccessfullResponse(response);

@@ -1,3 +1,5 @@
+package dto;
+
 /**
  * CustomField type-key class <a href="https://gitlab.com/ooo-laptev/sds/-/wikis/User-documentation">(check documentation)</a>
  */

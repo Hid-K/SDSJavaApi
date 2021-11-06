@@ -57,15 +57,15 @@ Realized methods:
   * [x] getDocument
   * [x] deleteDocument
   * [x] getAllDocuments
-* [ ] Custom field:
+* [x] Custom field:
   * [x] createCustomField
-  * [ ] updateCustomField
-  * [ ] getAvailableCustomFieldTypes
+  * [x] updateCustomField
+  * [x] getAvailableCustomFieldTypes
   * [x] getCustomFieldValue
   * [x] setCustomFieldValue
-  * [ ] getCustomField
-  * [ ] deleteCustomField
-  * [ ] getAllCustomFields
+  * [x] getCustomField
+  * [x] deleteCustomField
+  * [x] getAllCustomFields
 * [ ] Template:
   * [x] assignTemplateToDocument
   * [ ] getDocumentsAttachedWithTemplate
