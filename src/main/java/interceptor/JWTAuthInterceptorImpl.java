@@ -35,9 +35,9 @@ public class JWTAuthInterceptorImpl implements Interceptor
         {
             throw new LoginException();
         }
-        System.out.println("=================\nRequest:\n" + endpoint);
-        System.out.println(REQUESTTYPE.toMethodName(requestType));
-        System.out.println(requestBody+"\n");
+//        System.out.println("=================\nRequest:\n" + endpoint);
+//        System.out.println(REQUESTTYPE.toMethodName(requestType));
+//        System.out.println(requestBody+"\n");
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
@@ -80,7 +80,7 @@ public class JWTAuthInterceptorImpl implements Interceptor
             e.printStackTrace();
         }
 
-        System.out.println("Response:\n" + response.body() + "\n=================");
+//        System.out.println("Response:\n" + response.body() + "\n=================");
 
         return response;
     }

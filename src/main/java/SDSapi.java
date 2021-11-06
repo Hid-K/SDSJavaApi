@@ -6,6 +6,7 @@ import interceptor.Interceptor;
 import interceptor.JWTAuthInterceptorImpl;
 import interceptor.REQUESTTYPE;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import resource.CustomFieldResource;
 import resource.DocumentResource;
@@ -17,14 +18,13 @@ import javax.security.auth.login.LoginException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class SDSapi
         implements CustomFieldResource, DocumentResource, FieldBlockResource, TemplateResource
@@ -70,6 +70,89 @@ public class SDSapi
         System.out.println(response);
     }
 
+    CustomFieldDTO jsonToCustomField(JSONObject obj)
+    {
+        CustomFieldDTO result = new CustomFieldDTO();
+
+        try
+        {
+            result.setId(obj.getLong("id"));
+        } catch (JSONException e)
+        {
+            return null;
+        };
+
+        try
+        {
+            result.setDescription(obj.getString("description"));
+        } catch (JSONException e)
+        {
+            result.setDescription(null);
+        };
+
+        try
+        {
+            result.setName(obj.getString("name"));
+        } catch (JSONException e)
+        {
+            result.setName(null);
+        };
+
+        try
+        {
+            result.setType(obj.getString("type"));
+        } catch (JSONException e)
+        {
+            result.setType(null);
+        };
+
+        return result;
+    };
+
+    DocumentDTO jsonToDocument(JSONObject obj)
+    {
+        DocumentDTO result = new DocumentDTO();
+
+        try
+        {
+            result.setId(obj.getLong("id"));
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        };
+
+        try
+        {
+            result.setCreated(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+                    .parse(obj.getString("created")));
+        } catch (ParseException e)
+        {
+            e.printStackTrace();
+            result.setCreated(new Date(0));
+        }
+
+        try
+        {
+            Iterator<Object> iter = obj.getJSONArray("assignedTemplates").iterator();
+
+            List<Long> assignedTemplates = new LinkedList<>();
+
+            for (Iterator<Object> it = iter; it.hasNext(); )
+            {
+                assignedTemplates.add(Long.valueOf(String.valueOf(it.next())));
+            }
+
+            result.setAssignedTemplates(assignedTemplates);
+        } catch (JSONException e)
+        {
+//            e.printStackTrace();
+            result.setAssignedTemplates(null);
+        }
+
+        return result;
+    };
+
     @Override
     public CustomFieldDTO createCustomField( String description, String name, String type ) throws LoginException
     {
@@ -85,10 +168,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                 response.statusCode() == 201)
             {
-                return new CustomFieldDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                                          new JSONObject(String.valueOf(response.body())).getString("name"),
-                                          new JSONObject(String.valueOf(response.body())).getString("description"),
-                                          new JSONObject(String.valueOf(response.body())).getString("type"));
+                return jsonToCustomField(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -112,10 +192,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return new CustomFieldDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                        new JSONObject(String.valueOf(response.body())).getString("name"),
-                        new JSONObject(String.valueOf(response.body())).getString("description"),
-                        new JSONObject(String.valueOf(response.body())).getString("type"));
+                return jsonToCustomField(new JSONObject(response.body()));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -135,10 +212,8 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return new CustomFieldDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                        new JSONObject(String.valueOf(response.body())).getString("name"),
-                        new JSONObject(String.valueOf(response.body())).getString("description"),
-                        new JSONObject(String.valueOf(response.body())).getString("type"));
+                return jsonToCustomField(new JSONObject(response.body()));
+
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -167,13 +242,7 @@ public class SDSapi
                 List<CustomFieldDTO> result = new LinkedList<>();
                 for (Object o : new JSONArray(String.valueOf(response.body())))
                 {
-                    JSONObject cfJSON = new JSONObject(o.toString());
-                    CustomFieldDTO cf = new CustomFieldDTO();
-                    cf.setId(cfJSON.getLong("id"));
-                    cf.setDescription(cfJSON.getString("description"));
-                    cf.setName(cfJSON.getString("name"));
-                    cf.setType(cfJSON.getString("type"));
-                    result.add(cf);
+                    result.add(jsonToCustomField(new JSONObject(o.toString())));
                 }
 
                 return result.toArray(new CustomFieldDTO[0]);
@@ -264,16 +333,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                try
-                {
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                                           new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-                                                   .parse((new JSONObject(String.valueOf(response.body())).getString("created"))));
-                } catch (ParseException e)
-                {
-                    e.printStackTrace();
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
-                }
+                return jsonToDocument(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -298,16 +358,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                try
-                {
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-                                    .parse((new JSONObject(String.valueOf(response.body())).getString("created"))));
-                } catch (ParseException e)
-                {
-                    e.printStackTrace();
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
-                }
+                return jsonToDocument(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -329,16 +380,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                try
-                {
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-                                       .parse((new JSONObject(String.valueOf(response.body())).getString("created"))));
-                } catch (ParseException e)
-                {
-                    e.printStackTrace();
-                    return new DocumentDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),new Date(0));
-                }
+                return jsonToDocument(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -374,23 +416,7 @@ public class SDSapi
                 List<DocumentDTO> result = new LinkedList<>();
                 for (Object o : new JSONArray(String.valueOf(response.body())))
                 {
-                    JSONObject docJSON = new JSONObject(o.toString());
-                    DocumentDTO doc = new DocumentDTO();
-                    doc.setId(docJSON.getLong("id"));
-                    try
-                    {
-                        doc.setCreated(
-                                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
-                                        .parse(docJSON.getString("created"))
-                                        );
-                        doc.setAssignedTemplates((List<Long>)(Object)docJSON.getJSONArray("assignedTemplates").toList());
-                        result.add(doc);
-                    } catch (ParseException e)
-                    {
-                        e.printStackTrace();
-                        doc.setCreated(null);
-                        result.add( doc );
-                    }
+                    result.add(jsonToDocument(new JSONObject(String.valueOf(response.body()))));
                 }
 
                 return result.toArray(new DocumentDTO[0]);
