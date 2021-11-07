@@ -12,6 +12,7 @@ import javax.security.auth.login.LoginException;
  */
 public interface FieldBlockResource
 {
+    String endpoint = "/api/fieldBlocks";
 
     /**
      * Creates a new FieldBlock.

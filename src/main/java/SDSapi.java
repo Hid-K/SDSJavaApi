@@ -153,10 +153,72 @@ public class SDSapi
         return result;
     };
 
+    TemplateDTO jsonToTemplate(JSONObject obj)
+    {
+        TemplateDTO result = new TemplateDTO();
+
+        try
+        {
+            result.setId(obj.getLong("id"));
+        } catch ( Exception e )
+        {
+            return null;
+        }
+
+        try
+        {
+            result.setDescription(obj.getString("description"));
+        } catch (JSONException e)
+        {
+            result.setDescription(null);
+        };
+
+        try
+        {
+            result.setName(obj.getString("name"));
+        } catch (JSONException e)
+        {
+            result.setName(null);
+        };
+
+        return result;
+    };
+
+    FieldBlockDTO jsonToFieldBlock(JSONObject obj)
+    {
+        FieldBlockDTO result = new FieldBlockDTO();
+
+        try
+        {
+            result.setId(obj.getLong("id"));
+        } catch (Exception e)
+        {
+            return null;
+        };
+
+        try
+        {
+            result.setName(obj.getString("name"));
+        } catch (JSONException e)
+        {
+            result.setName(null);
+        }
+
+        try
+        {
+            result.setDescription(obj.getString("description"));
+        } catch (JSONException e)
+        {
+            result.setDescription(null);
+        }
+
+        return result;
+    };
+
     @Override
     public CustomFieldDTO createCustomField( String description, String name, String type ) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/customFields", REQUESTTYPE.REQUESTTYPE_POST,
+        HttpResponse response = interceptor.doRequest(CustomFieldResource.endpoint, REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
                                 .put("id", "null")
                                 .put("name", name)
@@ -180,7 +242,7 @@ public class SDSapi
     @Override
     public CustomFieldDTO updateCustomField(String description, String name, String type, Long id) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/customFields", REQUESTTYPE.REQUESTTYPE_PUT,
+        HttpResponse response = interceptor.doRequest(CustomFieldResource.endpoint, REQUESTTYPE.REQUESTTYPE_PUT,
                 new JSONObject().put("description", description)
                         .put("id", id)
                         .put("name", name)
@@ -204,7 +266,7 @@ public class SDSapi
     @Override
     public CustomFieldDTO getCustomField(Long id) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/customFields/"+id, REQUESTTYPE.REQUESTTYPE_GET, null);
+        HttpResponse response = interceptor.doRequest(CustomFieldResource.endpoint+"/"+id, REQUESTTYPE.REQUESTTYPE_GET, null);
 
 
         if(response != null)
@@ -225,13 +287,13 @@ public class SDSapi
     @Override
     public void deleteCustomField(Long id) throws LoginException
     {
-        interceptor.doRequest("/api/customFields/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, null);
+        interceptor.doRequest(CustomFieldResource.endpoint+"/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, null);
     }
 
     @Override
     public CustomFieldDTO[] getAllCustomFields(int pageNumber, int pageSize) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/customFields?page="+pageNumber+"&size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, null);
+        HttpResponse response = interceptor.doRequest(CustomFieldResource.endpoint+"?page="+pageNumber+"&size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, null);
 
 
         if(response != null)
@@ -257,7 +319,7 @@ public class SDSapi
     @Override
     public String[] getAvailableCustomFieldTypes() throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/customFields/availableTypes", REQUESTTYPE.REQUESTTYPE_GET, null);
+        HttpResponse response = interceptor.doRequest(CustomFieldResource.endpoint+"/availableTypes", REQUESTTYPE.REQUESTTYPE_GET, null);
 
         if(response != null)
         {
@@ -277,7 +339,7 @@ public class SDSapi
     public String setCustomFieldValue( Long customFieldId, Long documentId, String value ) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/customFields/value?customFieldId=" + customFieldId +
+                CustomFieldResource.endpoint+"/value?customFieldId=" + customFieldId +
                          "&documentId=" + documentId + "&value="+value, REQUESTTYPE.REQUESTTYPE_PUT, "");
 
 
@@ -299,7 +361,7 @@ public class SDSapi
     public String getCustomFieldValue( Long customFieldId, Long documentId ) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/customFields/value?customFieldId=" + customFieldId +
+                CustomFieldResource.endpoint+"/value?customFieldId=" + customFieldId +
                         "&documentId=" + documentId, REQUESTTYPE.REQUESTTYPE_GET, "");
 
 
@@ -321,7 +383,7 @@ public class SDSapi
     public DocumentDTO createDocument(Long[] assignedTemplates) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/documents", REQUESTTYPE.REQUESTTYPE_POST,
+                DocumentResource.endpoint, REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("assignedTemplates", assignedTemplates)
                                 .put("created",
                                         getSDSFormattedDate(LocalDateTime.now())
@@ -347,7 +409,7 @@ public class SDSapi
     public DocumentDTO updateDocument(DocumentDTO document) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/documents", REQUESTTYPE.REQUESTTYPE_PUT,
+                DocumentResource.endpoint, REQUESTTYPE.REQUESTTYPE_PUT,
                 new JSONObject().put("assignedTemplates", document.getAssignedTemplates())
                                 .put("created", getSDSFormattedDate(document.getCreated()))
                                 .put("id", document.getId()).toString());
@@ -372,7 +434,7 @@ public class SDSapi
     public DocumentDTO getDocument(Long id) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/documents/"+id, REQUESTTYPE.REQUESTTYPE_GET, "");
+                DocumentResource.endpoint+"/"+id, REQUESTTYPE.REQUESTTYPE_GET, "");
 
 
         if(response != null)
@@ -394,7 +456,7 @@ public class SDSapi
     public void deleteDocument(Long id) throws LoginException
     {
         HttpResponse response = interceptor.doRequest(
-                "/api/documents/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, "");
+                DocumentResource.endpoint+"/"+id, REQUESTTYPE.REQUESTTYPE_DELETE, "");
 
         if(response.statusCode() != 200 &&
            response.statusCode() != 201 &&
@@ -405,7 +467,7 @@ public class SDSapi
     @Override
     public DocumentDTO[] getAllDocuments(int pageNumber, int pageSize) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/documents?page=" + pageNumber +
+        HttpResponse response = interceptor.doRequest(DocumentResource.endpoint+"?page=" + pageNumber +
                 "size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, "");
 
         if(response != null)
@@ -431,7 +493,7 @@ public class SDSapi
     @Override
     public TemplateDTO createTemplate(String description, String name) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/templates", REQUESTTYPE.REQUESTTYPE_POST,
+        HttpResponse response = interceptor.doRequest(TemplateResource.endpoint, REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
                         .put("id", "null")
                         .put("name", name).toString());
@@ -491,9 +553,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return new TemplateDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                        new JSONObject(String.valueOf(response.body())).getString("name"),
-                        new JSONObject(String.valueOf(response.body())).getString("description"));
+                return jsonToTemplate(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -505,7 +565,7 @@ public class SDSapi
     @Override
     public FieldBlockDTO createFieldBlock(String description, String name) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest("/api/fieldBlocks", REQUESTTYPE.REQUESTTYPE_POST,
+        HttpResponse response = interceptor.doRequest(FieldBlockResource.endpoint, REQUESTTYPE.REQUESTTYPE_POST,
                 new JSONObject().put("description", description)
                         .put("id", "null")
                         .put("name", name).toString());
@@ -516,9 +576,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return new FieldBlockDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                        new JSONObject(String.valueOf(response.body())).getString("name"),
-                        new JSONObject(String.valueOf(response.body())).getString("description"));
+                return jsonToFieldBlock(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -542,9 +600,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return new FieldBlockDTO(new JSONObject(String.valueOf(response.body())).getLong("id"),
-                        new JSONObject(String.valueOf(response.body())).getString("name"),
-                        new JSONObject(String.valueOf(response.body())).getString("description"));
+                return jsonToFieldBlock(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);

@@ -13,6 +13,7 @@ import javax.security.auth.login.LoginException;
  */
 public interface CustomFieldResource
 {
+    String endpoint = "/api/customFields";
 
     /**
      * Creates a new CustomField in the system.

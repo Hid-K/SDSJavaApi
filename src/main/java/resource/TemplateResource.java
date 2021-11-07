@@ -12,8 +12,8 @@ import javax.security.auth.login.LoginException;
  * @author <a href="mailto:a7l97nn@protonmail.com">Aleksei Laptev</a> on 28-Sep-2021
  */
 public interface TemplateResource
-
 {
+    String endpoint = "/api/templates";
 
     /**
      * Creates new Template.

@@ -12,6 +12,7 @@ import javax.security.auth.login.LoginException;
  */
 public interface DocumentResource
 {
+    String endpoint = "/api/documents";
 
     /**
      * Creates new document.
