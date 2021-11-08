@@ -128,22 +128,42 @@ public class main
             System.out.println("==================");
         };
 
-        System.out.println(Arrays.deepToString(api.getAllDocuments(1,10)));
+        System.out.println(Arrays.deepToString(api.getAllDocuments(0,100)));
 
-        System.out.println(api.setCustomFieldValue(createdCF.getId(), createdDocument.getId(), "10"));
-        System.out.println(api.getCustomFieldValue(createdCF.getId(), createdDocument.getId()));
+        api.setCustomFieldValue(createdCF.getId(), createdDocument.getId(), "10");
+
+        if(api.getCustomFieldValue(createdCF.getId(), createdDocument.getId()).equals("10"))
+        {
+            System.out.println("PASSED: setCustomFieldValue and getCustomFieldValue\n==================");
+        } else
+        {
+            System.out.println("ERROR PASSING: setCustomFieldValue or(and) getCustomFieldValue");
+            System.out.println("Created document:\n"+createdDocument);
+            System.out.println("\nCreated custom field:\n"+createdCF);
+            System.out.println("==================");
+        }
 
         api.deleteDocument(createdDocument.getId());
 
-        System.out.println(api.getDocument(createdDocument.getId()));
-
-        System.out.println(api.getCustomField(createdCF.getId()));
         System.out.println(api.updateCustomField("description", "name", CustomFieldTypeKey.date, createdCF.getId()));
 
-        System.out.println(api.getCustomField(createdCF.getId()));
+        if((createdCF = api.getCustomField(createdCF.getId())) != null &&
+            createdCF.getName().equals("name") &&
+            createdCF.getDescription().equals("description") &&
+            createdCF.getType().equals(CustomFieldTypeKey.date))
+        {
+            System.out.println("PASSED: updateCustomField\n==================");
+        } else
+        {
+            System.out.println("ERROR PASSING: updateCustomField");
+            System.out.println("\nCreated custom field:\n"+createdCF);
+            System.out.println("==================");
+        }
 
-        System.out.println(Arrays.deepToString(api.getAllCustomFields(1,8)));
-        System.out.println(Arrays.toString(api.getAvailableCustomFieldTypes()));
+        System.out.println("Get all custom fields method work result:\n" +
+                Arrays.deepToString(api.getAllCustomFields(0,100)));
+        System.out.println("Get all custom fields types method work result:\n" +
+                Arrays.toString(api.getAvailableCustomFieldTypes()));
 
         api.deleteCustomField(createdCF.getId());
 

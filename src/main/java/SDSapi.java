@@ -15,16 +15,15 @@ import resource.TemplateResource;
 import resource.authentication.LoginVM;
 
 import javax.security.auth.login.LoginException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Array;
 import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class SDSapi
         implements CustomFieldResource, DocumentResource, FieldBlockResource, TemplateResource
@@ -39,18 +38,6 @@ public class SDSapi
     public SDSapi(String password, String username)
     {
         interceptor = new JWTAuthInterceptorImpl(new LoginVM(username, password, false), null);
-    }
-
-    public static byte[] serializeObject(Object obj) throws IOException
-    {
-        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bytesOut);
-        oos.writeObject(obj);
-        oos.flush();
-        byte[] bytes = bytesOut.toByteArray();
-        bytesOut.close();
-        oos.close();
-        return bytes;
     }
 
     String getSDSFormattedDate( LocalDateTime formattable)
@@ -80,7 +67,7 @@ public class SDSapi
         } catch (JSONException e)
         {
             return null;
-        };
+        }
 
         try
         {
@@ -88,7 +75,7 @@ public class SDSapi
         } catch (JSONException e)
         {
             result.setDescription(null);
-        };
+        }
 
         try
         {
@@ -96,7 +83,7 @@ public class SDSapi
         } catch (JSONException e)
         {
             result.setName(null);
-        };
+        }
 
         try
         {
@@ -104,10 +91,10 @@ public class SDSapi
         } catch (JSONException e)
         {
             result.setType(null);
-        };
+        }
 
         return result;
-    };
+    }
 
     DocumentDTO jsonToDocument(JSONObject obj)
     {
@@ -120,7 +107,7 @@ public class SDSapi
         {
             e.printStackTrace();
             return null;
-        };
+        }
 
         try
         {
@@ -151,7 +138,7 @@ public class SDSapi
         }
 
         return result;
-    };
+    }
 
     TemplateDTO jsonToTemplate(JSONObject obj)
     {
@@ -171,7 +158,7 @@ public class SDSapi
         } catch (JSONException e)
         {
             result.setDescription(null);
-        };
+        }
 
         try
         {
@@ -179,10 +166,10 @@ public class SDSapi
         } catch (JSONException e)
         {
             result.setName(null);
-        };
+        }
 
         return result;
-    };
+    }
 
     FieldBlockDTO jsonToFieldBlock(JSONObject obj)
     {
@@ -194,7 +181,7 @@ public class SDSapi
         } catch (Exception e)
         {
             return null;
-        };
+        }
 
         try
         {
@@ -213,7 +200,7 @@ public class SDSapi
         }
 
         return result;
-    };
+    }
 
     @Override
     public CustomFieldDTO createCustomField( String description, String name, String type ) throws LoginException
@@ -254,7 +241,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return jsonToCustomField(new JSONObject(response.body()));
+                return jsonToCustomField(new JSONObject(String.valueOf(response.body())));
             } else
             {
                 handleNonSuccessfullResponse(response);
@@ -274,7 +261,7 @@ public class SDSapi
             if (response.statusCode() == 200 ||
                     response.statusCode() == 201)
             {
-                return jsonToCustomField(new JSONObject(response.body()));
+                return jsonToCustomField(new JSONObject(String.valueOf(response.body())));
 
             } else
             {
@@ -467,8 +454,9 @@ public class SDSapi
     @Override
     public DocumentDTO[] getAllDocuments(int pageNumber, int pageSize) throws LoginException
     {
-        HttpResponse response = interceptor.doRequest(DocumentResource.endpoint+"?page=" + pageNumber +
-                "size="+pageSize, REQUESTTYPE.REQUESTTYPE_GET, "");
+        HttpResponse response = interceptor.doRequest(
+                DocumentResource.endpoint+"?page=" + pageNumber + "&size="+pageSize,
+                         REQUESTTYPE.REQUESTTYPE_GET, "");
 
         if(response != null)
         {
@@ -478,7 +466,7 @@ public class SDSapi
                 List<DocumentDTO> result = new LinkedList<>();
                 for (Object o : new JSONArray(String.valueOf(response.body())))
                 {
-                    result.add(jsonToDocument(new JSONObject(String.valueOf(response.body()))));
+                    result.add((jsonToDocument(new JSONObject(o.toString()))));
                 }
 
                 return result.toArray(new DocumentDTO[0]);
